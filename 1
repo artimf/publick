@@ -1,1 +1,4 @@
-^(?=.*?\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b)(?!^.*\b(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b$).*
+st.write("Фильтр по стенду:")
+stend_options = df['stend'].unique()
+selected_stends = [st.sidebar.checkbox(stend, value=True) for stend in stend_options]
+active_stends = [stend for stend, selected in zip(stend_options, selected_stends) if selected]
