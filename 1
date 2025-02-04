@@ -8,7 +8,11 @@ if not filtered_df.empty:
     # Построение графика
     plt.figure(figsize=(10, 5))
     sns.set_style("whitegrid")
-    sns.barplot(x=role_counts.values, y=role_counts.index, palette="viridis")
+    ax = sns.barplot(x=role_counts.values, y=role_counts.index, palette="viridis")
+
+    # Добавление числовых меток
+    for i, (value, role) in enumerate(zip(role_counts.values, role_counts.index)):
+        ax.text(value + 0.1, i, str(value), va='center', ha='left', fontsize=10, fontweight='bold')
 
     plt.xlabel("Количество серверов")
     plt.ylabel("Роль")
