@@ -1,21 +1,89 @@
-# --- ВИЗУАЛИЗАЦИЯ РОЛЕЙ ---
+import json
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import streamlit as st
+
+st.set_page_config(layout='wide')
+
+hide_menu_style = """
+    <style>
+        #MainMenu {visibility: hidden;}
+        .stAppDeployButton {visibility: hidden;}
+        .stAppToolbar {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_menu_style, unsafe_allow_html=True)
+
+# Загрузка JSON
+with open('combined_logs.json') as f:
+    data = json.load(f)
+
+# Преобразование в DataFrame
+df = pd.DataFrame(data).T
+
+new_order = ['hostname', 'ip_address', 'stend', 'po', 'role',
+             'sm_hdd', 'sm_vers', 'sm_net', 'sm_dcentr', 'sm_vmware',
+             'status', 'time', 'info', 'date_create']
+existing_columns = [col for col in new_order if col in df.columns]
+df = df[existing_columns]
+
+for col in ['info']:
+    df[col] = df[col].astype(str).apply(lambda x: x.replace('\n', ' ').strip())
+
+# Интерфейс
+st.title("АС")
+
+# Фильтры
+st.sidebar.header("Фильтры")
+
+# Фильтр Стенд в виде кнопок с возможностью выбора нескольких значений
+stend_options = sorted(df['stend'].dropna().unique())
+selected_stends = set()
+
+cols = st.sidebar.columns(len(stend_options))
+for col, option in zip(cols, stend_options):
+    if col.toggle(option):
+        selected_stends.add(option)
+    else:
+        selected_stends.discard(option)
+
+po_filter = st.sidebar.multiselect("ПО", sorted(df['po'].dropna().unique()))
+role_filter = st.sidebar.multiselect("Роль", sorted(df['role'].dropna().unique()))
+
+# Применение фильтров
+filtered_df = df.copy()
+if selected_stends:
+    filtered_df = filtered_df[filtered_df['stend'].isin(selected_stends)]
+if po_filter:
+    filtered_df = filtered_df[filtered_df['po'].isin(po_filter)]
+if role_filter:
+    filtered_df = filtered_df[filtered_df['role'].isin(role_filter)]
+
+# Таблица с данными
+st.dataframe(filtered_df)
+
+num_records = len(filtered_df)
+st.info(f"Количество найденных записей: {num_records}")
+
+# Детальная информация
+if not filtered_df.empty and st.checkbox("Показать подробности"):
+    selected_host = st.selectbox("Выберите хост", filtered_df['hostname'])
+    st.json(data[next(key for key, val in data.items() if val['hostname'] == selected_host)])
+
+# Визуализация ролей
 if not filtered_df.empty:
     st.subheader("Распределение ролей")
-
-    # Подсчёт ролей
     role_counts = filtered_df['role'].value_counts()
 
-    # Построение графика
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(8, 4))
     sns.set_style("whitegrid")
     ax = sns.barplot(x=role_counts.values, y=role_counts.index, palette="viridis")
 
-    # Добавление числовых меток
     for i, (value, role) in enumerate(zip(role_counts.values, role_counts.index)):
         ax.text(value + 0.1, i, str(value), va='center', ha='left', fontsize=10, fontweight='bold')
 
     plt.xlabel("Количество серверов")
     plt.ylabel("Роль")
     plt.title("Распределение ролей по серверам")
-
     st.pyplot(plt)
