@@ -40,19 +40,40 @@ for col, option in zip(cols, stend_options):
     else:
         selected_stends.discard(option)
 
-po_filter = st.sidebar.multiselect("ПО", sorted(df['po'].dropna().unique()))
-role_filter = st.sidebar.multiselect("Роль", sorted(df['role'].dropna().unique()))
+po_options = sorted(df['po'].dropna().unique())
+selected_pos = set()
+
+st.sidebar.subheader("ПО")
+po_cols = st.sidebar.columns(4)  # Разбиваем кнопки на 4 колонки
+for i, po in enumerate(po_options):
+    if po_cols[i % 4].button(po):
+        if po in selected_pos:
+            selected_pos.remove(po)
+        else:
+            selected_pos.add(po)
+
+role_options = sorted(df['role'].dropna().unique())
+selected_roles = set()
+
+st.sidebar.subheader("Роли")
+role_cols = st.sidebar.columns(4)  # Разбиваем кнопки на 4 колонки
+for i, role in enumerate(role_options):
+    if role_cols[i % 4].button(role):
+        if role in selected_roles:
+            selected_roles.remove(role)
+        else:
+            selected_roles.add(role)
 
 filtered_df = df.copy()
 if selected_stends:
     filtered_df = filtered_df[filtered_df['stend'].isin(selected_stends)]
-if po_filter:
-    filtered_df = filtered_df[filtered_df['po'].isin(po_filter)]
-if role_filter:
-    filtered_df = filtered_df[filtered_df['role'].isin(role_filter)]
+if selected_pos:
+    filtered_df = filtered_df[filtered_df['po'].isin(selected_pos)]
+if selected_roles:
+    filtered_df = filtered_df[filtered_df['role'].isin(selected_roles)]
 
 st.dataframe(filtered_df)
-st.info(f"Количество найденных записей: {len(filtered_df)}")
+st.info(f"Количество записей: {len(filtered_df)}")
 
 if not filtered_df.empty and st.checkbox("Показать подробности"):
     selected_host = st.selectbox("Выберите хост", filtered_df['hostname'])
@@ -60,19 +81,19 @@ if not filtered_df.empty and st.checkbox("Показать подробност�
 
 if not filtered_df.empty:
     st.subheader("Распределение ролей")
-    role_counts = filtered_df['role'].value_counts().reset_index()
-    role_counts.columns = ['Роль', 'Количество']
+    role_counts = filtered_df['po'].value_counts().reset_index()
+    role_counts.columns = ['ПО', 'Количество']
 
     fig = px.bar(role_counts, 
                  x='Количество', 
-                 y='Роль', 
+                 y='ПО', 
                  orientation='h', 
                  text='Количество',
-                 color='Роль',
+                 color='ПО',
                  color_discrete_sequence=px.colors.qualitative.Vivid)
 
     fig.update_traces(textposition='outside')
-    fig.update_layout(title_text="Распределение ролей по серверам", 
+    fig.update_layout(title_text="Распределение ПО", 
                       xaxis_title="Количество серверов", 
                       yaxis_title="Роль", 
                       template="plotly_white")
