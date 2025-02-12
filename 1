@@ -1,13 +1,41 @@
-#"""
-# Фильтр по стенду
-#stend_options = sorted(df['stend'].dropna().unique())
-#selected_stends = st.sidebar.multiselect("Стенды", stend_options, default=stend_options)
 
-# Фильтр по ПО  
-#po_options = sorted(df['po'].dropna().unique())
-#selected_po = st.sidebar.multiselect("ПО", po_options, default=po_options)
+col1, col2, col3 = st.columns(3)
+# Размещение чекбоксов в колонках
+with col1: # Фильтр по стенду
+    st.markdown('<div class="col1">', unsafe_allow_html=True)
+    stend_options = sorted(df['stend'].dropna().unique())
+    selected_stends = set()
+    st.write("Стенды:") 
+    role_cols = st.columns(3)# Создание колонок внутри col3
+    for i, option in enumerate(stend_options):
+        col = role_cols[i % 3]
+        with col:
+            if st.checkbox(option, key=f'stend_{option}', value=True):
+                selected_stends.add(option)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# Фильтр по цепочке
-#role_options = sorted(df['role'].dropna().unique())
-#role_filter = st.sidebar.multiselect("Цепочка", role_options, default=role_options)
-#"""
+with col2: # Фильтр по ПО
+    st.markdown('<div class="col2">', unsafe_allow_html=True)
+    po_options = sorted(df['po'].dropna().unique())
+    selected_po = set()
+    st.write("ПО:")
+    role_cols = st.columns(3)# Создание колонок внутри col3
+    for i, option in enumerate(po_options):
+        col = role_cols[i % 3]
+        with col:
+            if st.checkbox(option, key=f'po_{option}', value=True):
+                selected_po.add(option) 
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col3: # Фильтр по цепочке
+    st.markdown('<div class="col3">', unsafe_allow_html=True)
+    role_options = sorted(df['role'].dropna().unique())
+    role_filter = set()
+    st.write("Цепочка:")
+    role_cols = st.columns(3)# Создание колонок внутри col3
+    for i, option in enumerate(role_options):
+        col = role_cols[i % 3]
+        with col:
+            if st.checkbox(option, key=f'role_{option}', value=True):
+                role_filter.add(option)
+    st.markdown('</div>', unsafe_allow_html=True)
