@@ -28,49 +28,81 @@ for col in ['info']:
     df[col] = df[col].astype(str).apply(lambda x: x.replace('\n', ' ').strip())
 
 st.title("АС")
-st.sidebar.header("Фильтры")
+#st.sidebar.header("Фильтры")
 
-stend_options = sorted(df['stend'].dropna().unique())
-selected_stends = set()
 
-cols = st.sidebar.columns(len(stend_options))
-for col, option in zip(cols, stend_options):
-    if col.toggle(option):
-        selected_stends.add(option)
-    else:
-        selected_stends.discard(option)
+#"""
+# Фильтр по стенду
+#stend_options = sorted(df['stend'].dropna().unique())
+#selected_stends = st.sidebar.multiselect("Стенды", stend_options, default=stend_options)
 
-po_options = sorted(df['po'].dropna().unique())
-selected_pos = set()
+# Фильтр по ПО  
+#po_options = sorted(df['po'].dropna().unique())
+#selected_po = st.sidebar.multiselect("ПО", po_options, default=po_options)
 
-st.sidebar.subheader("ПО")
-po_cols = st.sidebar.columns(4)  # Разбиваем кнопки на 4 колонки
-for i, po in enumerate(po_options):
-    if po_cols[i % 4].button(po):
-        if po in selected_pos:
-            selected_pos.remove(po)
-        else:
-            selected_pos.add(po)
+# Фильтр по цепочке
+#role_options = sorted(df['role'].dropna().unique())
+#role_filter = st.sidebar.multiselect("Цепочка", role_options, default=role_options)
+#"""
+st.markdown("""
+    <style>
+        .stHorizontalBlock  {
+            border: 1px solid black;
+            padding: 3px;
+            margin: 1px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-role_options = sorted(df['role'].dropna().unique())
-selected_roles = set()
+col1, col2, col3 = st.columns(3)
+# Размещение чекбоксов в колонках
+with col1: # Фильтр по стенду
+    st.markdown('<div class="col1">', unsafe_allow_html=True)
+    stend_options = sorted(df['stend'].dropna().unique())
+    selected_stends = set()
+    st.write("Стенды:") 
+    role_cols = st.columns(3)# Создание колонок внутри col3
+    for i, option in enumerate(stend_options):
+        col = role_cols[i % 3]
+        with col:
+            if st.checkbox(option, key=f'stend_{option}', value=True):
+                selected_stends.add(option)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-st.sidebar.subheader("Роли")
-role_cols = st.sidebar.columns(4)  # Разбиваем кнопки на 4 колонки
-for i, role in enumerate(role_options):
-    if role_cols[i % 4].button(role):
-        if role in selected_roles:
-            selected_roles.remove(role)
-        else:
-            selected_roles.add(role)
+with col2: # Фильтр по ПО
+    st.markdown('<div class="col2">', unsafe_allow_html=True)
+    po_options = sorted(df['po'].dropna().unique())
+    selected_po = set()
+    st.write("ПО:")
+    role_cols = st.columns(3)# Создание колонок внутри col3
+    for i, option in enumerate(po_options):
+        col = role_cols[i % 3]
+        with col:
+            if st.checkbox(option, key=f'po_{option}', value=True):
+                selected_po.add(option) 
+    st.markdown('</div>', unsafe_allow_html=True)
 
+with col3: # Фильтр по цепочке
+    st.markdown('<div class="col3">', unsafe_allow_html=True)
+    role_options = sorted(df['role'].dropna().unique())
+    role_filter = set()
+    st.write("Цепочка:")
+    role_cols = st.columns(3)# Создание колонок внутри col3
+    for i, option in enumerate(role_options):
+        col = role_cols[i % 3]
+        with col:
+            if st.checkbox(option, key=f'role_{option}', value=True):
+                role_filter.add(option)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# Фильтрация данных
 filtered_df = df.copy()
 if selected_stends:
     filtered_df = filtered_df[filtered_df['stend'].isin(selected_stends)]
-if selected_pos:
-    filtered_df = filtered_df[filtered_df['po'].isin(selected_pos)]
-if selected_roles:
-    filtered_df = filtered_df[filtered_df['role'].isin(selected_roles)]
+if selected_po:
+    filtered_df = filtered_df[filtered_df['po'].isin(selected_po)]
+if role_filter:
+    filtered_df = filtered_df[filtered_df['role'].isin(role_filter)]
 
 st.dataframe(filtered_df)
 st.info(f"Количество записей: {len(filtered_df)}")
