@@ -1,92 +1,13 @@
-import json
-import pandas as pd
-import plotly.express as px
-import streamlit as st
-
-st.set_page_config(layout='wide')
-
-hide_menu_style = """
-    <style>
-        #MainMenu {visibility: hidden;}
-        .stAppDeployButton {visibility: hidden;}
-        .stAppToolbar {visibility: hidden;}
-    </style>
-"""
-st.markdown(hide_menu_style, unsafe_allow_html=True)
-
-# Загрузка JSON
-with open('combined_logs.json') as f:
-    data = json.load(f)
-
-df = pd.DataFrame(data).T
-new_order = ['hostname', 'ip_address', 'stend', 'po', 'role',
-             'sm_hdd', 'sm_vers', 'sm_net', 'sm_dcentr', 'sm_vmware',
-             'status', 'time', 'info', 'date_create']
-df = df[[col for col in new_order if col in df.columns]]
-
-for col in ['info']:
-    df[col] = df[col].astype(str).apply(lambda x: x.replace('\n', ' ').strip())
-
-st.title("АС")
-st.sidebar.header("Фильтры")
-
+#"""
 # Фильтр по стенду
-stend_options = sorted(df['stend'].dropna().unique())
-selected_stends = set()
-st.sidebar.write("Стенды:")
-for option in stend_options:
-    if st.sidebar.checkbox(option, key=f'stend_{option}', value=True):
-        selected_stends.add(option)
+#stend_options = sorted(df['stend'].dropna().unique())
+#selected_stends = st.sidebar.multiselect("Стенды", stend_options, default=stend_options)
 
 # Фильтр по ПО  
-po_options = sorted(df['po'].dropna().unique())
-selected_po = set()
-st.sidebar.write("ПО:")
-for option in po_options:
-    if st.sidebar.checkbox(option, key=f'po_{option}', value=True):
-        selected_po.add(option)
+#po_options = sorted(df['po'].dropna().unique())
+#selected_po = st.sidebar.multiselect("ПО", po_options, default=po_options)
 
 # Фильтр по цепочке
-role_options = sorted(df['role'].dropna().unique())
-role_filter = set()
-st.sidebar.write("Цепочка:")
-for option in role_options:
-    if st.sidebar.checkbox(option, key=f'role_{option}', value=True):
-        role_filter.add(option)
-
-# Фильтрация данных
-filtered_df = df.copy()
-if selected_stends:
-    filtered_df = filtered_df[filtered_df['stend'].isin(selected_stends)]
-if selected_po:
-    filtered_df = filtered_df[filtered_df['po'].isin(selected_po)]
-if role_filter:
-    filtered_df = filtered_df[filtered_df['role'].isin(role_filter)]
-
-st.dataframe(filtered_df)
-st.info(f"Количество записей: {len(filtered_df)}")
-
-if not filtered_df.empty and st.checkbox("Показать подробности"):
-    selected_host = st.selectbox("Выберите хост", filtered_df['hostname'])
-    st.json(data[next(key for key, val in data.items() if val['hostname'] == selected_host)])
-
-if not filtered_df.empty:
-    st.subheader("Распределение ролей")
-    role_counts = filtered_df['po'].value_counts().reset_index()
-    role_counts.columns = ['ПО', 'Количество']
-
-    fig = px.bar(role_counts, 
-                 x='Количество', 
-                 y='ПО', 
-                 orientation='h', 
-                 text='Количество',
-                 color='ПО',
-                 color_discrete_sequence=px.colors.qualitative.Vivid)
-
-    fig.update_traces(textposition='outside')
-    fig.update_layout(title_text="Распределение ПО", 
-                      xaxis_title="Количество серверов", 
-                      yaxis_title="Роль", 
-                      template="plotly_white")
-
-    st.plotly_chart(fig)
+#role_options = sorted(df['role'].dropna().unique())
+#role_filter = st.sidebar.multiselect("Цепочка", role_options, default=role_options)
+#"""
